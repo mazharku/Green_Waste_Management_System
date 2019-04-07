@@ -1,0 +1,16 @@
+#address-list {
+	/*width:300px;*/
+	position:absolute;
+	left: 57%;
+	background: #ddd;
+}
+#address-list > ul {
+	list-style: none;
+	padding: 0;
+}
+#address-list > ul > li {
+	padding: 5px 15px;
+	font-size: 18px;
+	color: #000;
+	border-top: 1px solid #333;
+}

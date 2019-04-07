@@ -1,0 +1,82 @@
+#include <TinyGPS++.h>
+#include <SoftwareSerial.h>
+
+
+static const int RXPin = 4, TXPin = 3;
+static const uint32_t GPSBaud = 9600;
+
+// The TinyGPS++ object
+TinyGPSPlus gps;
+
+// The serial connection to the GPS device
+SoftwareSerial ss(RXPin, TXPin);
+SoftwareSerial s2(9,10);
+void setup(){
+  Serial.begin(9600);
+  ss.begin(GPSBaud);
+  s2.begin(9600);
+  delay(10000);
+  initGPRS();
+ 
+}
+void loop(){
+  s2.overflow();
+     ss.overflow();
+  intgpss();
+  //serverdata( 97,56);
+}
+
+void intgpss()
+{
+ double ln,la;
+  ss.listen();
+  while (ss.available() > 0){
+    gps.encode(ss.read());
+    if (gps.location.isUpdated()){
+     s2.listen();
+      Serial.print("Latitude= "); 
+      la=gps.location.lat();
+      Serial.println(la, 6);
+      Serial.print(" Longitude= ");
+       ln=gps.location.lng();
+      Serial.println(ln, 6);  
+      
+     serverdata( la,ln);
+     
+    
+    }
+    
+  }
+}
+float serverdata(double longitude, double latitude)
+{
+   //s2.listen();
+  s2.print("AT+HTTPPARA=\"URL\",\"http://waste.dgted.com/processgpsdata.php?binid=123&longitude=");
+  s2.print(longitude, 6);
+  s2.print("&lattitude=");
+  s2.print(latitude, 6);
+  s2.println("\"");
+ 
+  delay(200);
+  s2.println(" AT+HTTPACTION=0");
+ //delay(100);
+  
+}
+void initGPRS()
+{
+   s2.println("AT");
+  delay(200);
+  s2.println("AT+SAPBR=3,1,\"Contype\",\"GPRS\"\r\n");
+  delay(500);
+
+  s2.println("AT+SAPBR=3,1,\"APN\",\"internet\"\r\n");
+  delay(500);
+
+  s2.println("AT+SAPBR =1,1");
+  delay(3500);
+  s2.println("AT+HTTPINIT");
+  delay(500);
+  s2.println("AT+HTTPPARA=\"CID\",1");
+  delay(500);
+
+}
